@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Be My Boy? 💕</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Quicksand', 'Mitr', sans-serif;
+        }
+        .heart {
+            position: absolute;
+            animation: float 3s linear infinite;
+            opacity: 0;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0); opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="bg-pink-50 min-h-screen flex items-center justify-center overflow-hidden relative p-4">
+
+    <div id="hearts-container" class="absolute inset-0 pointer-events-none hidden"></div>
+
+    <div class="bg-white/70 backdrop-blur-md p-8 rounded-3xl shadow-xl shadow-pink-200 text-center max-w-md w-full transition-all duration-500 transform scale-100 z-10">
+        
+        <div id="step-1" class="space-y-6">
+            <h1 class="text-4xl font-bold text-pink-400 drop-shadow-sm">Are you ready? ✨</h1>
+            <div class="text-6xl animate-bounce my-4">🙈</div>
+            <button id="btn-ready" class="w-full bg-pink-300 hover:bg-pink-400 text-white font-bold py-3 px-6 rounded-full shadow-md transition-all duration-300 transform hover:scale-105 active:scale-95 text-lg cursor-pointer">
+                I’m ready
+            </button>
+        </div>
+
+        <div id="step-2" class="hidden space-y-6 relative min-h-[250px] flex flex-col justify-center items-center">
+            <h1 class="text-3xl font-bold text-pink-500">เป็นแฟนกันนะครับ? 💖</h1>
+            <div id="emoji-stage" class="text-6xl my-2">🥺</div>
+            
+            <div class="flex items-center justify-center gap-4 w-full min-h-[100px] relative" id="btn-container">
+                <button id="btn-yes" class="bg-emerald-300 hover:bg-emerald-400 text-white font-bold py-3 px-8 rounded-full shadow-md transition-all duration-200 text-lg cursor-pointer">
+                    Yes
+                </button>
+                <button id="btn-no" class="bg-rose-300 hover:bg-rose-400 text-white font-bold py-3 px-8 rounded-full shadow-md transition-all duration-200 text-lg cursor-pointer">
+                    No
+                </button>
+            </div>
+        </div>
+
+        <div id="step-3" class="hidden space-y-6">
+            <h1 class="text-3xl font-bold text-pink-500 leading-snug">
+                ขอบคุณนะครับ <br>
+                <span class="text-2xl font-medium text-pink-400">อยู่ดูแลกันไปนานๆนะ 🎀</span>
+            </h1>
+            <div class="text-7xl animate-pulse my-4">🥰🐷💕</div>
+        </div>
+
+    </div>
+
+    <script>
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const step3 = document.getElementById('step-3');
+        
+        const btnReady = document.getElementById('btn-ready');
+        const btnYes = document.getElementById('btn-yes');
+        const btnNo = document.getElementById('btn-no');
+        const emojiStage = document.getElementById('emoji-stage');
+        const heartsContainer = document.getElementById('hearts-container');
+
+        let noCount = 0;
+
+        // หน้า 1 -> หน้า 2
+        btnReady.addEventListener('click', () => {
+            step1.classList.add('hidden');
+            step2.classList.remove('hidden');
+        });
+
+        // หน้า 2 -> หน้า 3 (เมื่อกด Yes)
+        btnYes.addEventListener('click', () => {
+            step2.classList.add('hidden');
+            step3.classList.remove('hidden');
+            heartsContainer.classList.remove('hidden');
+            createHearts();
+        });
+
+        // Logic ปุ่ม No แบบกดครั้งเดียวแล้วรอบหน้าหนีเลย
+        btnNo.addEventListener('click', () => {
+            noCount++;
+
+            if (noCount === 1) {
+                // กดครั้งแรก: Yes ขยายใหญ่ขึ้น, No เล็กลงทันที
+                btnYes.style.transform = `scale(1.5)`;
+                btnNo.style.transform = `scale(0.65)`;
+                emojiStage.innerText = 'ง่า 😢';
+            } else {
+                // กดครั้งที่ 2 เป็นต้นไป: เริ่มวิ่งหนีทันที
+                btnNo.style.position = 'fixed';
+                moveButtonEscape(btnNo);
+                emojiStage.innerText = 'ไม่ยอมรับความเห็นต่างครับ 555 🏃‍♂️💨';
+            }
+        });
+
+        // ดักจับ: ถ้าเค้าพยายามจะเอาเมาส์มาชีหรือเอานิ้วมาแตะปุ่ม No ในครั้งที่ 2 ให้ปุ่มรีบหนีหนีก่อนเลย
+        ['mouseenter', 'touchstart'].forEach(eventType => {
+            btnNo.addEventListener(eventType, () => {
+                if (noCount >= 1) {
+                    moveButtonEscape(btnNo);
+                }
+            });
+        });
+
+        // ฟังก์ชันสุ่มพิกัดให้ปุ่มวิ่งหนีรอบหน้าจอ
+        function moveButtonEscape(button) {
+            const padding = 30;
+            const buttonWidth = button.offsetWidth;
+            const buttonHeight = button.offsetHeight;
+            
+            const maxX = window.innerWidth - buttonWidth - padding;
+            const maxY = window.innerHeight - buttonHeight - padding;
+
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            button.style.left = `${randomX}px`;
+            button.style.top = `${randomY}px`;
+        }
+
+        // เอฟเฟกต์หัวใจลอยฟรุ้งฟริ้ง
+        function createHearts() {
+            const heartIcons = ['❤️', '💖', '💗', '💕', '🌸'];
+            for (let i = 0; i < 40; i++) {
+                setTimeout(() => {
+                    const heart = document.createElement('div');
+                    heart.classList.add('heart');
+                    heart.innerText = heartIcons[Math.floor(Math.random() * heartIcons.length)];
+                    heart.style.left = Math.random() * 100 + 'vw';
+                    heart.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                    heartsContainer.appendChild(heart);
+                    
+                    setTimeout(() => heart.remove(), 4000);
+                }, i * 150);
+            }
+        }
+    </script>
+</body>
+</html>
